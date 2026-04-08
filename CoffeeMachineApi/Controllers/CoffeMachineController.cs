@@ -11,6 +11,12 @@ namespace CoffeeMachineApi.Controllers
         private static int _counter = 0;
         private static readonly object _lock = new();
         public Func<DateTimeOffset> Clock { get; set; } = () => DateTimeOffset.Now;
+        private readonly WeatherMapService _weatherMapService;
+
+        public CoffeeMachineController(WeatherMapService weatherMapService)
+        {
+            _weatherMapService = weatherMapService;
+        }
 
         [HttpGet("brew-coffee")]
         public async Task<IActionResult> BrewCoffee()
@@ -37,7 +43,14 @@ namespace CoffeeMachineApi.Controllers
             }
 
             // Rule #1 — normal response
-            var message = "Your piping hot coffee is ready"; 
+            var message = "Your piping hot coffee is ready";
+            var temperature = await _weatherMapService.GetTemperatureAsync();
+
+            // new Rule #4 — if temperature is above 30°C, return iced coffee message
+            if (temperature.HasValue && temperature.Value > 30)
+            {
+                message = "Your refreshing iced coffee is ready";
+            }
             var response = new
             {
                 message,
@@ -45,6 +58,15 @@ namespace CoffeeMachineApi.Controllers
             };
 
             return Ok(response);
+        }
+
+        [NonAction]
+        public void ResetCounter()
+        {
+            lock (_lock)
+            {
+                _counter = 0;
+            }
         }
 
     }
