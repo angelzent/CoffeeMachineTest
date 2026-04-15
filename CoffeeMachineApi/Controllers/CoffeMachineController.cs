@@ -45,6 +45,7 @@ namespace CoffeeMachineApi.Controllers
             // Rule #1 — normal response
             var message = "Your piping hot coffee is ready";
             var temperature = await _weatherMapService.GetTemperatureAsync();
+            Trace.WriteLine($"vpb the temperature is: {(temperature.HasValue ? temperature.Value : 0)}");
 
             // new Rule #4 — if temperature is above 30°C, return iced coffee message
             if (temperature.HasValue && temperature.Value > 30)
